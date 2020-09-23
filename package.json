@@ -1,0 +1,14 @@
+{
+  "name": "wine-collection-app",
+  "version": "1.0.0",
+  "description": "Wine collection app for Electron programming class",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "author": "Katie Purdy",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "10.1.2"
+  }
+}
