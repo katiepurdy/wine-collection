@@ -1,43 +1,111 @@
-const { app, BrowserWindow } = require('electron')
+const { app, BrowserWindow, Menu, ipcMain } = require('electron');
+const path = require('path');
+const url = require('url');
+require('electron-reload')(__dirname); // Live reload
 
-function createWindow () {
-  // Create the browser window.
-  const win = new BrowserWindow({
-    width: 800,
-    height: 600,
-    webPreferences: {
-      nodeIntegration: true
-    }
-  })
+let mainWindow;
+let addWindow;
 
-  // and load the index.html of the app.
-  win.loadFile('index.html')
+// Main application window
+let createWindow = () => {
+	mainWindow = new BrowserWindow({
+	  width: 1200,
+		height: 800,
+		minWidth: 600,
+		minHeight: 800,
+		icon: 'assets/images/wine-bottle-icon.ico',
+	  webPreferences: {
+		nodeIntegration: true
+		}
+	});
 
-  // Open the DevTools.
-  win.webContents.openDevTools()
+	mainWindow.maximize();
+	mainWindow.loadURL(url.format({
+		pathname: path.join(__dirname, 'src/index.html'),
+		protocol: 'file',
+		slashes: true
+	}));
+
+	// mainWindow.webContents.openDevTools();
+  
+	mainWindow.on('closed', () => app.quit());
+  
+	ipcMain.on('item:add', (e, item) => {
+	  mainWindow.webContents.send('item:add', item);
+	  addWindow.close();
+	});
+  
+	let menu = Menu.buildFromTemplate(mainMenuTemplate);
+	Menu.setApplicationMenu(menu);
 }
 
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
-// Some APIs can only be used after this event occurs.
-app.whenReady().then(createWindow)
+// Clear main window
+let clearWindow = () => {
+	mainWindow.webContents.send('item:clear');
+}
 
-// Quit when all windows are closed, except on macOS. There, it's common
-// for applications and their menu bar to stay active until the user quits
-// explicitly with Cmd + Q.
+// Set up menu items
+const mainMenuTemplate = [
+	{
+		label: 'File',
+		submenu: [
+			{
+				label: 'Add a Wine',
+				click() { createAddWindow() }
+			},
+			{
+				label: 'Clear Wishlist',
+				click() { clearWindow() }
+			},
+			{ type: 'separator' },
+			{
+				label: 'Quit',
+				accelerator: process.platform === 'darwin' ? 'Cmd+Q' : 'Ctrl+Q',
+				click() { app.quit() }
+			},
+		]
+	}
+];
+
+// Add an item window
+let createAddWindow = () => {
+	addWindow = new BrowserWindow({
+		width: 650,
+		height: 850,
+		minWidth: 650,
+		minHeight: 850,
+		alwaysOnTop: true,
+		icon: 'assets/images/wine-bottle-icon.ico',
+		webPreferences: {
+				nodeIntegration: true
+		}
+	});
+
+	addWindow.loadURL(url.format({
+		pathname: path.join(__dirname, 'src/add.html'),
+		protocol: 'file',
+		slashes: true
+	}));
+
+	addWindow.on('close', function() {
+		addWindow = null;
+	});
+
+	// addWindow.webContents.openDevTools();
+}
+
+app.whenReady().then(createWindow);
+
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
-    app.quit()
+    app.quit();
   }
-})
+});
 
 app.on('activate', () => {
   // On macOS it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
   if (BrowserWindow.getAllWindows().length === 0) {
-    createWindow()
+    createWindow();
   }
-})
-
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and require them here.
+});

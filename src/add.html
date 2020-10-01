@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.1/css/bulma.min.css">
+    <link rel="stylesheet" href="../assets/css/main.css">
+    <link rel="stylesheet" href="../assets/css/add.css">
+    <link rel="stylesheet" href="../assets/css/yearpicker.css">
+    <title>Add a Bottle</title>
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <h1>Add a Bottle</h1>
+        </div>
+        <div class="row">
+            <form id="add-item-form">
+                <div class="field">
+                    <label for="name">Name</label>
+                    <div class="control">
+                        <input class="input" type="text" name="name" id="name" autofocus required>
+                    </div>
+                </div>
+                <div class="field">
+                    <label for="category">Category</label>
+                    <div class="control">
+                        <div class="select">
+                            <select name="category" id="category" required>
+                                <option value="dessert">Dessert</option>
+                                <option value="red">Red</option>
+                                <option value="white">White</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="field">
+                    <label for="type">Type</label>
+                    <div class="control">
+                        <div class="select">
+                            <select name="type" id="type" required>
+                                <option>Eiswein (Ice Wine)</option>
+                                <option>Sauternes</option>
+                                <option>Other Dessert Varieties</option>
+                                <option>Dessert Blends</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="field">
+                    <label for="year">Year</label>
+                    <div class="control">
+                        <input type="text" name="year" id="year" class="input yearpicker" required>
+                    </div>
+                </div>
+                <div class="field">
+                    <label for="winery">Winery</label>
+                    <div class="control">
+                        <input class="input" type="text" name="winery" id="winery">
+                    </div>
+                </div>
+                <div class="field">
+                    <label for="year-purchased">Year Purchased</label>
+                    <div class="control">
+                        <input type="text" name="year-purchased" id="year-purchased" class="input yearpicker" required>
+                    </div>
+                </div>
+                <div class="field">
+                    <label for="rating">Rating</label>
+                    <div class="control rating-stars">
+                        <div class="select">
+                            <select name="rating" id="rating" required>
+                                <option value="1" selected>1 star</option>
+                                <option value="2">2 stars</option>
+                                <option value="3">3 stars</option>
+                                <option value="4">4 stars</option>
+                                <option value="5">5 stars</option>
+                                <option value="6">6 stars</option>
+                                <option value="7">7 stars</option>
+                                <option value="8">8 stars</option>
+                                <option value="9">9 stars</option>
+                                <option value="10">10 stars</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="control">
+                    <button class="button is-light" type="submit">Add item</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script src="add.js"></script>
+    <script src="../assets/js/yearpicker.js"></script>
+    
+</body>
+</html>
