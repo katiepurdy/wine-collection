@@ -1,7 +1,6 @@
 const { app, BrowserWindow, Menu, ipcMain } = require('electron');
 const path = require('path');
 const url = require('url');
-require('electron-reload')(__dirname); // Live reload
 
 let mainWindow;
 let addWindow;
@@ -64,6 +63,19 @@ const mainMenuTemplate = [
 				click() { app.quit() }
 			},
 		]
+	},
+	{
+		label: 'Dev Tools',
+		submenu: [
+			{
+				label: 'Toggle Dev Tools',
+				accelerator: 'CmdorCtrl+J',
+				click(item, focusedWindow) { focusedWindow.toggleDevTools() }
+			},
+			{
+				role: 'reload'
+			}
+		]
 	}
 ];
 
@@ -86,6 +98,8 @@ let createAddWindow = () => {
 		protocol: 'file',
 		slashes: true
 	}));
+
+	addWindow.setMenuBarVisibility(false);
 
 	addWindow.on('close', function() {
 		addWindow = null;
