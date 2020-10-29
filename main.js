@@ -1,9 +1,26 @@
 const { app, BrowserWindow, Menu, ipcMain } = require('electron');
 const path = require('path');
 const url = require('url');
+const knex = require('knex')({
+	client: 'sqlite3',
+	connection: {
+		filename: './src/wine.db'
+	},
+	useNullAsDefault: true
+});
 
 let mainWindow;
 let addWindow;
+let editWindow;
+
+// Get the wines from the database and send them to the main window
+const readDB = () => {
+	clearWindow();
+	let result = knex.select('*').from('wines_table');
+	result.then((wines) => { 
+		mainWindow.webContents.send('item:add', wines);
+	});
+}
 
 // Main application window
 let createWindow = () => {
@@ -14,7 +31,8 @@ let createWindow = () => {
 		minHeight: 800,
 		icon: 'assets/images/wine-bottle-icon.ico',
 	  webPreferences: {
-		nodeIntegration: true
+			nodeIntegration: true,
+			enableRemoteModule: true
 		}
 	});
 
@@ -24,16 +42,43 @@ let createWindow = () => {
 		protocol: 'file',
 		slashes: true
 	}));
+	
+	mainWindow.webContents.on('did-finish-load', () => readDB());
 
-	// mainWindow.webContents.openDevTools();
-  
 	mainWindow.on('closed', () => app.quit());
-  
+	
+	// Add
 	ipcMain.on('item:add', (e, item) => {
-	  mainWindow.webContents.send('item:add', item);
+		knex('wines_table')
+			.insert(item)
+			.catch(err => console.log(err))
+			.then(() => readDB());
 	  addWindow.close();
 	});
-  
+
+	// Edit
+	ipcMain.on('editButtonClicked', (e, id) => {
+		createEditWindow(id);
+	});
+
+	// Edit Submit
+	ipcMain.on('item:edit', (e, id, item) => {
+		knex('wines_table')
+			.where({ 'id': id })
+			.update(item)
+			.catch(err => console.log(err))
+			.then(() => readDB());
+		editWindow.close();
+	});
+
+	// Delete
+	ipcMain.on('item:delete', (e, id) => {
+		knex('wines_table')
+			.where({ 'id': id })
+			.del()
+			.catch(err => console.log(err));
+	});
+
 	let menu = Menu.buildFromTemplate(mainMenuTemplate);
 	Menu.setApplicationMenu(menu);
 }
@@ -52,10 +97,14 @@ const mainMenuTemplate = [
 				label: 'Add a Wine',
 				click() { createAddWindow() }
 			},
-			{
-				label: 'Clear Wishlist',
-				click() { clearWindow() }
-			},
+			// {
+			// 	label: 'Read DB',
+			// 	click() { readDB() }
+			// },
+			// {
+			// 	label: 'Clear Wishlist',
+			// 	click() { clearWindow() }
+			// },
 			{ type: 'separator' },
 			{
 				label: 'Quit',
@@ -104,8 +153,42 @@ let createAddWindow = () => {
 	addWindow.on('close', function() {
 		addWindow = null;
 	});
+}
 
-	// addWindow.webContents.openDevTools();
+// Edit an item window
+let createEditWindow = (id) => {
+	editWindow = new BrowserWindow({
+		width: 650,
+		height: 850,
+		minWidth: 650,
+		minHeight: 850,
+		alwaysOnTop: true,
+		icon: 'assets/images/wine-bottle-icon.ico',
+		webPreferences: {
+				nodeIntegration: true
+		}
+	});
+
+	editWindow.loadURL(url.format({
+		pathname: path.join(__dirname, 'src/edit.html'),
+		protocol: 'file',
+		slashes: true
+	}));
+
+	let data = knex('wines_table')
+		.where({ id: id })
+		.catch(err => console.log(err));
+	data.then((wines) => {
+		editWindow.webContents.on('did-finish-load', () => {
+			editWindow.webContents.send('editData', wines[0]);
+		});
+	});
+
+	editWindow.setMenuBarVisibility(false);
+
+	editWindow.on('close', function() {
+		editWindow = null;
+	});
 }
 
 app.whenReady().then(createWindow);

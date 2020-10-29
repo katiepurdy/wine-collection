@@ -107,6 +107,10 @@ p {
     transition: var(--transition);
 }
 
+.edit-button {
+    margin: 0 2rem 2rem 2rem;
+}
+
 .button:hover {
     background-color: #111;
     cursor: pointer;
@@ -115,7 +119,7 @@ p {
 
 .wishlist {
     display: grid;
-    grid-template-columns: repeat(3, minmax(310px, 1fr));
+    grid-template-columns: repeat(3, minmax(350px, 1fr));
     grid-gap: 2rem;
     margin-bottom: 50px;
 }

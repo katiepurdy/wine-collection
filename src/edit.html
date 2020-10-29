@@ -5,17 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.1/css/bulma.min.css">
     <link rel="stylesheet" href="../assets/css/main.css">
-    <link rel="stylesheet" href="../assets/css/add.css">
+    <link rel="stylesheet" href="../assets/css/edit.css">
     <link rel="stylesheet" href="../assets/css/yearpicker.css">
-    <title>Add a Bottle</title>
+    <title>Edit a Bottle</title>
 </head>
 <body>
     <div class="container">
         <div class="row">
-            <h1>Add a Bottle</h1>
+            <h1>Edit a Bottle</h1>
         </div>
         <div class="row">
-            <form id="add-item-form">
+            <form id="edit-item-form">
                 <div class="field">
                     <label for="name">Name</label>
                     <div class="control">
@@ -87,16 +87,14 @@
                         </div>
                     </div>
                 </div>
-                <div class="field">
-                    <div class="control">
-                        <button class="button is-light" type="submit">Add item</button>
-                    </div>
+                <div class="control">
+                    <button class="button is-light" type="submit">Save changes</button>
                 </div>
             </form>
         </div>
     </div>
     
-    <script src="add.js"></script>
+    <script src="edit.js"></script>
     <script src="../assets/js/yearpicker.js"></script>
     
 </body>

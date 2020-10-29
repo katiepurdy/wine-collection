@@ -2,9 +2,10 @@ const electron = require('electron');
 const { ipcRenderer } = electron;
 window.$ = window.jQuery = require('jquery');
 
-// Selectors
-const addItemForm = document.getElementById('add-item-form');
+// Get element references
+const editItemForm = document.getElementById('edit-item-form');
 const categorySelect = document.getElementById('category');
+let id;
 
 // Populate the type select box with options for the selected category
 let populateType = () => {
@@ -27,6 +28,32 @@ let populateType = () => {
   }
 }
 
+let populateInitialFormValues = (item) => {
+  document.getElementById('name').value = item.name;
+  document.getElementById('category').value = item.category.toLowerCase();
+  populateType();
+  const typeOptions = document.getElementById('type').options;
+  for (let i = 0; i < typeOptions.length; i++) {
+    if (typeOptions[i].textContent === item.type) {
+      typeOptions[i].selected = true;
+      console.log(typeOptions[i]);
+    }
+  }
+	document.getElementById('year').value = item.year;
+	document.getElementById('winery').value = item.winery;
+	document.getElementById('year-purchased').value = item.yearPurchased;
+  document.getElementById('rating').value = item.rating;
+}
+
+ipcRenderer.on('editData', (e, item) => {
+  id = item.id;
+  populateInitialFormValues(item);
+});
+
+// Add event listeners
+editItemForm.addEventListener('submit', submitForm);
+categorySelect.addEventListener('change', populateType);
+
 let clearErrors = () => {
   const errorIDS = ['nameError', 'yearError', 'yearPurchasedError']
 
@@ -35,16 +62,16 @@ let clearErrors = () => {
   });
 }
 
-let submitForm = e => {
+function submitForm(e) {
   e.preventDefault();
 
   // Grab the form values
-  const name = document.getElementById('name').value;
-  const category = document.getElementById('category').value;
-  const type = document.getElementById('type').value;
-  const year = document.getElementById('year').value;
-  const winery = document.getElementById('winery').value;
-  const yearPurchased = document.getElementById('year-purchased').value;
+	const name = document.getElementById('name').value;
+	const category = document.getElementById('category').value;
+	const type = document.getElementById('type').value;
+	const year = document.getElementById('year').value;
+	const winery = document.getElementById('winery').value;
+	const yearPurchased = document.getElementById('year-purchased').value;
   const rating = document.getElementById('rating').value;
   
   let checkForErrors = () => {
@@ -76,7 +103,7 @@ let submitForm = e => {
       yearPurchased: yearPurchased,
       rating: rating
     }
-    ipcRenderer.send('item:add', item);
+    ipcRenderer.send('item:edit', id, item);
   } else {
     clearErrors()
     errors.forEach(error => {
@@ -85,10 +112,6 @@ let submitForm = e => {
     });
   }
 }
-
-// Add event listeners
-addItemForm.addEventListener('submit', submitForm);
-categorySelect.addEventListener('change', populateType);
 
 // jQuery plugin for some datepicker functionality
 $(document).ready(function(){

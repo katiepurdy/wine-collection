@@ -1,5 +1,4 @@
 const { ipcRenderer } = require('electron');
-
 const wishlist = document.getElementById('wishlist');
 
 let clearList = () => {
@@ -8,88 +7,110 @@ let clearList = () => {
 
 let removeItem = e => {
 	const listItem = e.target.parentNode.parentNode;
+	const listItemId = listItem.dataset.wineId;
 	wishlist.removeChild(listItem);
+	ipcRenderer.send('item:delete', listItemId);
 }
 
-ipcRenderer.on('item:add', (e, item) => {
-	// Build the new list item
-	const wishlistItemLi = document.createElement('li');
-	wishlistItemLi.classList.add('wishlist-item');
+let editItem = e => {
+	const listItem = e.target.parentNode;
+	const listItemId = listItem.dataset.wineId;
+	ipcRenderer.send('editButtonClicked', listItemId);
+}
 
-	// Category
-	const categoryDiv = document.createElement('div');
-	categoryDiv.classList.add('category');
-	const categoryP = document.createElement('p');
-	categoryP.classList.add('category-name');
-	const categoryText = document.createTextNode(item.category);
+ipcRenderer.on('item:add', (e, items) => {
+	items.forEach((item) => {
+		// Build the new list item
+		const wishlistItemLi = document.createElement('li');
+		wishlistItemLi.classList.add('wishlist-item');
+		wishlistItemLi.dataset.wineId = item.id;
 
-	// Include the category as a class name for color coding
-	categoryDiv.classList.add(`${item.category.toLowerCase()}`);
-	categoryP.appendChild(categoryText);
-	categoryDiv.appendChild(categoryP);
+		// Category
+		const categoryDiv = document.createElement('div');
+		categoryDiv.classList.add('category');
+		const categoryP = document.createElement('p');
+		categoryP.classList.add('category-name');
+		const categoryText = document.createTextNode(item.category);
 
-	// Include a button to remove the item from the list
-	const removeButton = document.createElement('button');
-	removeButton.innerHTML = '&times;';
-	removeButton.classList.add('remove-item');
-	removeButton.addEventListener('click', removeItem);
-	categoryDiv.appendChild(removeButton);
+		// Include the category as a class name for color coding
+		categoryDiv.classList.add(`${item.category.toLowerCase()}`);
+		categoryP.appendChild(categoryText);
+		categoryDiv.appendChild(categoryP);
 
-	// Item details
-	const itemDetailsDiv = document.createElement('div');
-	itemDetailsDiv.classList.add('item-details');
-	const nameP = document.createElement('p');
-	nameP.classList.add('name');
-	const nameText = document.createTextNode(`Name: ${item.name}`);
-	nameP.appendChild(nameText);
-	const yearP = document.createElement('p');
-	yearP.classList.add('year');
-	const yearText = document.createTextNode(`Year: ${item.year}`);
-	yearP.appendChild(yearText);
-	const ratingDisplayP = document.createElement('p');
-	const ratingStarsSpan = document.createElement('span');
-	ratingStarsSpan.classList.add('rating-stars');
-	ratingDisplayP.innerHTML = 'Rating: ';
+		// Include a button to remove the item from the list
+		const removeButton = document.createElement('button');
+		removeButton.innerHTML = '&times;';
+		removeButton.classList.add('remove-item');
+		removeButton.addEventListener('click', removeItem);
+		categoryDiv.appendChild(removeButton);
 
-	// Add star icons for the rating
-	for (let i = 0; i < parseInt(item.rating); i++) {
-		ratingStarsSpan.innerHTML += `<i class="fas fa-star"></i>`;
-	}
-	ratingDisplayP.appendChild(ratingStarsSpan);
+		// Item details
+		const itemDetailsDiv = document.createElement('div');
+		itemDetailsDiv.classList.add('item-details');
+		const nameP = document.createElement('p');
+		nameP.classList.add('name');
+		const nameText = document.createTextNode(`Name: ${item.name}`);
+		nameP.appendChild(nameText);
+		const yearP = document.createElement('p');
+		yearP.classList.add('year');
+		const yearText = document.createTextNode(`Year: ${item.year}`);
+		yearP.appendChild(yearText);
+		const ratingDisplayP = document.createElement('p');
+		const ratingStarsSpan = document.createElement('span');
+		ratingStarsSpan.classList.add('rating-stars');
+		ratingDisplayP.innerHTML = 'Rating: ';
 
-	// Continue item details
-	ratingDisplayP.classList.add('rating-display');
-	const wineryP = document.createElement('p');
-	const wineryText = document.createTextNode(`Winery: ${item.winery}`);
-	wineryP.appendChild(wineryText);
-	wineryP.classList.add('winery');
-	const typeP = document.createElement('p');
-	const typeText = document.createTextNode(`Type: ${item.type}`);
-	typeP.appendChild(typeText);
-	typeP.classList.add('type');
-	const yearPurchasedP = document.createElement('p');
-	const yearPurchasedText = document.createTextNode(`Year Puchased: ${item.yearPurchased}`);
-	yearPurchasedP.classList.add('year-purchased')
-	yearPurchasedP.appendChild(yearPurchasedText);
+		// Add star icons for the rating
+		for (let i = 0; i < parseInt(item.rating); i++) {
+			ratingStarsSpan.innerHTML += `<i class="fas fa-star"></i>`;
+		}
+		ratingDisplayP.appendChild(ratingStarsSpan);
 
-	// Put it all together
-	itemDetailsDiv.appendChild(nameP);
-	itemDetailsDiv.appendChild(yearP);
-	itemDetailsDiv.appendChild(ratingDisplayP);
-	itemDetailsDiv.appendChild(wineryP);
-	itemDetailsDiv.appendChild(typeP);
-	itemDetailsDiv.appendChild(yearPurchasedP);
-	wishlistItemLi.appendChild(categoryDiv);
-	wishlistItemLi.appendChild(itemDetailsDiv);
-	
-	// Append the newly built item to the list
-	wishlist.appendChild(wishlistItemLi);
+		// Continue item details
+		ratingDisplayP.classList.add('rating-display');
+		const wineryP = document.createElement('p');
+		const wineryText = document.createTextNode(`Winery: ${item.winery}`);
+		wineryP.appendChild(wineryText);
+		wineryP.classList.add('winery');
+		const typeP = document.createElement('p');
+		const typeText = document.createTextNode(`Type: ${item.type}`);
+		typeP.appendChild(typeText);
+		typeP.classList.add('type');
+		const yearPurchasedP = document.createElement('p');
+		const yearPurchasedText = document.createTextNode(`Year Puchased: ${item.yearPurchased}`);
+		yearPurchasedP.classList.add('year-purchased')
+		yearPurchasedP.appendChild(yearPurchasedText);
+
+		const editButton = document.createElement('button');
+		editButton.classList.add('button');
+		editButton.classList.add('edit-button');
+		editButton.addEventListener('click', editItem);
+		editButton.textContent = 'Edit wine';
+
+		// Put it all together
+		itemDetailsDiv.appendChild(nameP);
+		itemDetailsDiv.appendChild(yearP);
+		itemDetailsDiv.appendChild(ratingDisplayP);
+		itemDetailsDiv.appendChild(wineryP);
+		itemDetailsDiv.appendChild(typeP);
+		itemDetailsDiv.appendChild(yearPurchasedP);
+		wishlistItemLi.appendChild(categoryDiv);
+		wishlistItemLi.appendChild(itemDetailsDiv);
+		wishlistItemLi.appendChild(editButton);
+		
+		// Append the newly built item to the list
+		wishlist.appendChild(wishlistItemLi);
+	});
 });
 
 // Clear the list through the menu or a clear list button
 ipcRenderer.on('item:clear', clearList);
 
-// Bind event handler to each remove button
+// Bind event handlers to each item's buttons
 document.querySelectorAll('.remove-item').forEach(item => {
   item.addEventListener('click', removeItem)
+});
+
+document.querySelectorAll('.edit-item').forEach(item => {
+  item.addEventListener('click', editItem);
 });
