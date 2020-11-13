@@ -2,6 +2,14 @@ const electron = require('electron');
 const { ipcRenderer } = electron;
 window.$ = window.jQuery = require('jquery');
 
+let applyTheme = themeName => {
+	// Add a class to the root element to apply different CSS custom properties predefined for each theme in main.css
+	var root = document.getElementsByTagName('html')[0];
+	root.className = themeName;
+}
+
+ipcRenderer.on('applyTheme', (e, themeName) => applyTheme(themeName));
+
 // Get element references
 const editItemForm = document.getElementById('edit-item-form');
 const categorySelect = document.getElementById('category');

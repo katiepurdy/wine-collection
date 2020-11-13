@@ -1,6 +1,22 @@
 const { ipcRenderer } = require('electron');
 const wishlist = document.getElementById('wishlist');
 
+let applyTheme = themeName => {
+	// Add a class to the root element to apply different CSS custom properties predefined for each theme in main.css
+	var root = document.getElementsByTagName('html')[0];
+	root.className = themeName;
+
+	// Use different SVG of wine glasses depending on theme
+	let svg = document.getElementById('wine-glasses');
+	if (themeName === 'dark') {
+		svg.src = '../assets/images/wine-glasses-with-hearts-svgrepo-com-light.svg';
+	} else {
+		svg.src = '../assets/images/wine-glasses-with-hearts-svgrepo-com-dark.svg';
+	}
+}
+
+ipcRenderer.on('applyTheme', (e, themeName) => applyTheme(themeName));
+
 let clearList = () => {
 	wishlist.innerHTML = '';
 }

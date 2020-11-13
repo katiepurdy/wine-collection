@@ -1,4 +1,5 @@
-const { app, BrowserWindow, Menu, ipcMain } = require('electron');
+const { app, BrowserWindow, Menu, ipcMain, ipcRenderer } = require('electron');
+const Settings = require('./settings.js');
 const path = require('path');
 const url = require('url');
 const knex = require('knex')({
@@ -13,8 +14,27 @@ let mainWindow;
 let addWindow;
 let editWindow;
 
+const settings = new Settings({
+	configName: 'user-preferences',
+	defaults: {
+		theme: {
+			name: 'default'
+		}
+	}
+});
+
+let changeTheme = themeName => {
+	// Apply theme to all browser windows
+	let browserWindows = BrowserWindow.getAllWindows();
+	browserWindows.forEach(window => {
+		window.webContents.send('applyTheme', themeName);
+	});
+	// Save to user preferences
+	settings.set('theme', { name: themeName });
+}
+
 // Get the wines from the database and send them to the main window
-const readDB = () => {
+let readDB = () => {
 	clearWindow();
 	let result = knex.select('*').from('wines_table');
 	result.then((wines) => { 
@@ -43,7 +63,12 @@ let createWindow = () => {
 		slashes: true
 	}));
 	
-	mainWindow.webContents.on('did-finish-load', () => readDB());
+	mainWindow.webContents.on('did-finish-load', () => {
+		// Get theme name from the user preferences
+		let currentTheme = settings.get('theme');
+		changeTheme(currentTheme.name);
+		readDB()
+	});
 
 	mainWindow.on('closed', () => app.quit());
 	
@@ -97,10 +122,10 @@ const mainMenuTemplate = [
 				label: 'Add a Wine',
 				click() { createAddWindow() }
 			},
-			// {
-			// 	label: 'Read DB',
-			// 	click() { readDB() }
-			// },
+			{
+				label: 'Read DB',
+				click() { readDB() }
+			},
 			// {
 			// 	label: 'Clear Wishlist',
 			// 	click() { clearWindow() }
@@ -111,6 +136,23 @@ const mainMenuTemplate = [
 				accelerator: process.platform === 'darwin' ? 'Cmd+Q' : 'Ctrl+Q',
 				click() { app.quit() }
 			},
+		]
+	},
+	{
+		label: 'Themes',
+		submenu: [
+			{
+				label: 'Default',
+				click() { changeTheme('default')}
+			},
+			{
+				label: 'Dark',
+				click() { changeTheme('dark')}
+			},
+			{
+				label: 'Bright',
+				click() { changeTheme('bright')}
+			}
 		]
 	},
 	{
@@ -153,6 +195,12 @@ let createAddWindow = () => {
 	addWindow.on('close', function() {
 		addWindow = null;
 	});
+
+	addWindow.webContents.on('did-finish-load', () => {
+		// Get theme name from the user preferences
+		let currentTheme = settings.get('theme');
+		changeTheme(currentTheme.name);
+	});
 }
 
 // Edit an item window
@@ -185,6 +233,12 @@ let createEditWindow = (id) => {
 	});
 
 	editWindow.setMenuBarVisibility(false);
+
+	editWindow.webContents.on('did-finish-load', () => {
+		// Get theme name from the user preferences
+		let currentTheme = settings.get('theme');
+		changeTheme(currentTheme.name);
+	});
 
 	editWindow.on('close', function() {
 		editWindow = null;
